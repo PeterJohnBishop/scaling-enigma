@@ -4,39 +4,50 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
 )
 
-func WebsocketClient() {
+func ServeWebsocketClient() {
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		log.Fatal("Error connecting:", err)
+		log.Fatal("Websocket Client failed to connect: " + err.Error())
 	}
 	defer conn.Close()
 
-	// listen for events
-	for {
-		_, message, err := conn.ReadMessage()
-		if err != nil {
-			fmt.Println("Read error:", err)
-			break
-		}
-		fmt.Println("Received:", string(message))
-	}
+	var wg sync.WaitGroup
 
-	// send event
+	// listen for events
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		for {
-			time.Sleep(3 * time.Second)
-			msg := "cli_event: Hello from the CLI!"
-			if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-				fmt.Println("Write error:", err)
+			_, message, err := conn.ReadMessage()
+			if err != nil {
+				fmt.Println("Read error:", err)
 				break
 			}
+			fmt.Println("Received:", string(message))
 		}
+	}()
+
+	// send event
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		go func() {
+			for {
+				time.Sleep(3 * time.Second)
+				msg := "cli_event: Hello from the CLI!"
+				if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
+					fmt.Println("Write error:", err)
+					break
+				}
+			}
+		}()
 	}()
 
 	select {} // keeps connection running

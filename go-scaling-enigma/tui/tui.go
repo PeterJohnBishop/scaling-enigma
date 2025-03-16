@@ -1,7 +1,7 @@
 package tui
 
 import (
-	"fmt"
+	"log"
 	"os"
 
 	"scaling-enigma/go-scaling-enigma/main.go/websocket"
@@ -11,10 +11,11 @@ import (
 
 func StartCLI() {
 	p := tea.NewProgram(initialFiller())
-	websocket.WebsocketClient()
+	websocket.ServeWebsocketClient()
 	if _, err := p.Run(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
+		log.Fatal("TUI Failed to start: " + err.Error())
 		os.Exit(1)
+
 	}
 }
 
