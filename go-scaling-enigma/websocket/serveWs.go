@@ -30,16 +30,15 @@ func ServeWebsocket(c *gin.Context) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		go func() {
-			for {
-				time.Sleep(5 * time.Second)
-				msg := "server_event: Hello from the server!"
-				if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-					fmt.Println("Write error:", err)
-					break
-				}
+		for {
+			time.Sleep(5 * time.Second)
+			msg := "server_event: Hello from the server!"
+			if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
+				fmt.Println("Write error:", err)
+				break
 			}
-		}()
+		}
+
 	}()
 
 	// listen for events
