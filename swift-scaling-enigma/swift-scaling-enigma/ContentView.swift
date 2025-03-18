@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    @StateObject private var webSocketManager = WebSocketManager()
     @Environment(\.modelContext) private var modelContext
     @Query private var items: [Item]
 
@@ -23,6 +24,9 @@ struct ContentView: View {
                     }
                 }
                 .onDelete(perform: deleteItems)
+            }
+            .onAppear() {
+                webSocketManager.sendMessage("iOS event: Hello from the iOS app!")
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

@@ -1,10 +1,13 @@
 package auth
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/joho/godotenv"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -18,10 +21,27 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-var AccessTokenSecret = []byte(os.Getenv("TOKEN_SECRET"))
-var RefreshTokenSecret = []byte(os.Getenv("REFRESH_TOKEN_SECRET"))
-var AccessTokenTTL = time.Minute * 15
-var RefreshTokenTTL = time.Hour * 24 * 7
+var (
+	AccessTokenSecret  string
+	RefreshTokenSecret string
+	AccessTokenTTL     = time.Minute * 15
+	RefreshTokenTTL    = time.Hour * 24 * 7
+)
+
+// Load .env once at startup
+func Init() {
+	err := godotenv.Load("server/.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	AccessTokenSecret = os.Getenv("TOKEN_SECRET")
+	RefreshTokenSecret = os.Getenv("REFRESH_TOKEN_SECRET")
+
+	if AccessTokenSecret == "" || RefreshTokenSecret == "" {
+		log.Fatal("TOKEN_SECRET or REFRESH_TOKEN_SECRET is missing")
+	}
+}
 
 type UserClaims struct {
 	ID    string `json:"id"`
@@ -32,34 +52,54 @@ type UserClaims struct {
 
 func NewAccessToken(claims UserClaims) (string, error) {
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	return accessToken.SignedString([]byte(os.Getenv("TOKEN_SECRET")))
+	return accessToken.SignedString([]byte(AccessTokenSecret))
 }
 
 func NewRefreshToken(claims jwt.StandardClaims) (string, error) {
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	return refreshToken.SignedString([]byte(os.Getenv("TOKEN_SECRET")))
+	return refreshToken.SignedString([]byte(RefreshTokenSecret))
 }
 
 func ParseAccessToken(accessToken string) *UserClaims {
 	parsedAccessToken, err := jwt.ParseWithClaims(accessToken, &UserClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("TOKEN_SECRET")), nil
+		// Ensure correct signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(AccessTokenSecret), nil
 	})
 	if err != nil || !parsedAccessToken.Valid {
+		fmt.Println("Token verification failed:", err) // Debugging output
 		return nil
 	}
 
-	return parsedAccessToken.Claims.(*UserClaims)
+	claims, ok := parsedAccessToken.Claims.(*UserClaims)
+	if !ok {
+		fmt.Println("Failed to cast token claims")
+		return nil
+	}
+
+	return claims
 }
 
 func ParseRefreshToken(refreshToken string) *jwt.StandardClaims {
 	parsedRefreshToken, err := jwt.ParseWithClaims(refreshToken, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("TOKEN_SECRET")), nil
+		// Ensure correct signing method
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(RefreshTokenSecret), nil
 	})
 	if err != nil || !parsedRefreshToken.Valid {
+		fmt.Println("Refresh token verification failed:", err)
 		return nil
 	}
 
-	return parsedRefreshToken.Claims.(*jwt.StandardClaims)
+	claims, ok := parsedRefreshToken.Claims.(*jwt.StandardClaims)
+	if !ok {
+		fmt.Println("Failed to cast refresh token claims")
+		return nil
+	}
+
+	return claims
 }
