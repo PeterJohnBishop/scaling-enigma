@@ -3,40 +3,31 @@ package tui
 import (
 	"log"
 	"os"
-
-	"scaling-enigma/go-scaling-enigma/main.go/websocket"
+	admin "scaling-enigma/go-scaling-enigma/main.go/tui/Admin"
+	"sync"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 func StartCLI() {
-	p := tea.NewProgram(initialFiller())
-	websocket.ServeWebsocketClient()
-	if _, err := p.Run(); err != nil {
-		log.Fatal("TUI Failed to start: " + err.Error())
-		os.Exit(1)
+	var wg sync.WaitGroup
 
-	}
-}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		ServeWebsocketClient()
+	}()
 
-type Filler struct {
-	message string
-}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		p := tea.NewProgram(admin.InitAdminModel())
+		if _, err := p.Run(); err != nil {
+			log.Fatal("TUI Failed to start: " + err.Error())
+			os.Exit(1)
+		}
+	}()
 
-func initialFiller() Filler {
-	return Filler{
-		message: "Hi",
-	}
-}
+	wg.Wait()
 
-func (m Filler) Init() tea.Cmd {
-	return nil
-}
-
-func (m Filler) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	return m, nil
-}
-
-func (m Filler) View() string {
-	return "Hella World"
 }

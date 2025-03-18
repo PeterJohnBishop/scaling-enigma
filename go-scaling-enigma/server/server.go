@@ -1,23 +1,25 @@
 package server
 
 import (
-	"fmt"
 	"log"
 	"net/http"
-	"scaling-enigma/go-scaling-enigma/main.go/websocket"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
 func ServeGin() {
+
+	gin.SetMode(gin.ReleaseMode)
+	f, _ := os.Create("gin.log")
+	gin.DefaultWriter = f
+
 	r := gin.Default()
 	r.GET("/", helloHandler)
-	r.GET("/ws", websocket.ServeWebsocket)
-	fmt.Println("WebSocket server running on ws://localhost:8080/ws")
-	err := r.Run(":8080")
-	if err != nil {
-		log.Fatal("Gin Server failed during startup: " + err.Error())
-	}
+	r.GET("/ws", ServeWebsocket)
+
+	log.Println("Server: [ Gin http://localhost:8080 ] : [ WebSocket ws://localhost:8080/ws ]")
+	r.Run(":8080")
 }
 
 func helloHandler(c *gin.Context) {

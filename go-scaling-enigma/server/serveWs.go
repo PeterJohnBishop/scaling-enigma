@@ -1,4 +1,4 @@
-package websocket
+package server
 
 import (
 	"fmt"
@@ -18,6 +18,7 @@ var upgrader = websocket.Upgrader{
 }
 
 func ServeWebsocket(c *gin.Context) {
+
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Fatal("Failed to upgrade server to Websocket Protocol: " + err.Error())
@@ -32,9 +33,9 @@ func ServeWebsocket(c *gin.Context) {
 		defer wg.Done()
 		for {
 			time.Sleep(5 * time.Second)
-			msg := "server_event: Hello from the server!"
+			msg := "\rserver_event: Hello from the server!"
 			if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-				fmt.Println("Write error:", err)
+				fmt.Println("\rWrite error:", err)
 				break
 			}
 		}
@@ -48,10 +49,10 @@ func ServeWebsocket(c *gin.Context) {
 		for {
 			_, msg, err := conn.ReadMessage()
 			if err != nil {
-				fmt.Println("Read error:", err)
+				fmt.Println("\rRead error:", err)
 				break
 			}
-			fmt.Println("Received:", string(msg))
+			fmt.Println("\rReceived:", string(msg))
 		}
 	}()
 

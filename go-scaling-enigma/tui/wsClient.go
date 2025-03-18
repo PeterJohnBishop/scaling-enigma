@@ -1,4 +1,4 @@
-package websocket
+package tui
 
 import (
 	"fmt"
@@ -11,6 +11,7 @@ import (
 )
 
 func ServeWebsocketClient() {
+
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
@@ -27,10 +28,10 @@ func ServeWebsocketClient() {
 		for {
 			_, message, err := conn.ReadMessage()
 			if err != nil {
-				fmt.Println("Read error:", err)
+				fmt.Println("\rRead error:", err)
 				break
 			}
-			fmt.Println("Received:", string(message))
+			fmt.Println("\rReceived:", string(message))
 		}
 	}()
 
@@ -41,9 +42,9 @@ func ServeWebsocketClient() {
 		go func() {
 			for {
 				time.Sleep(3 * time.Second)
-				msg := "cli_event: Hello from the CLI!"
+				msg := "\rcli_event: Hello from the CLI!"
 				if err := conn.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
-					fmt.Println("Write error:", err)
+					fmt.Println("\rWrite error:", err)
 					break
 				}
 			}
