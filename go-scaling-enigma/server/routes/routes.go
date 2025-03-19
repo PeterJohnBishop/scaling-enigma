@@ -3,12 +3,14 @@ package routes
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"scaling-enigma/go-scaling-enigma/main.go/server/auth"
 	"scaling-enigma/go-scaling-enigma/main.go/server/postgres"
+	"scaling-enigma/go-scaling-enigma/main.go/server/websocket"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -30,6 +32,7 @@ func CreateUserHandler(db *sql.DB, c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
+
 	c.JSON(http.StatusCreated, user)
 }
 
@@ -79,6 +82,8 @@ func Login(db *sql.DB, c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate refresh token"})
 		return
 	}
+
+	websocket.BroadcastMessage(fmt.Sprintf("%s logged in", user.ID))
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":       "Login Success",

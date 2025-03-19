@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	admin "scaling-enigma/go-scaling-enigma/main.go/tui/Admin"
+	"scaling-enigma/go-scaling-enigma/main.go/tui/wsclient"
 	"sync"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -15,9 +16,8 @@ func StartCLI() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		ServeWebsocketClient()
+		wsclient.ServeWebsocketClient()
 	}()
-
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -27,7 +27,6 @@ func StartCLI() {
 			os.Exit(1)
 		}
 	}()
-
 	wg.Wait()
 
 }

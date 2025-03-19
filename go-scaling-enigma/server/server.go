@@ -2,11 +2,12 @@ package server
 
 import (
 	"database/sql"
-	"log"
+	"fmt"
 	"os"
 
 	"scaling-enigma/go-scaling-enigma/main.go/server/auth"
 	"scaling-enigma/go-scaling-enigma/main.go/server/routes"
+	"scaling-enigma/go-scaling-enigma/main.go/server/websocket"
 
 	"github.com/gin-gonic/gin"
 )
@@ -22,14 +23,14 @@ func ServeGin(db *sql.DB) {
 	r := gin.Default()
 	addDefaultRoutes(r)
 	addUserRoutes(db, r)
-
-	log.Println("Server: [ Gin http://localhost:8080 ] : [ WebSocket ws://localhost:8080/ws ]")
+	go websocket.HandleBroadcast()
+	fmt.Println("Server listening on [ Gin http://localhost:8080 ] : [ WebSocket ws://localhost:8080/ws ]")
 	r.Run(":8080")
 }
 
 func addDefaultRoutes(r *gin.Engine) {
 	r.GET("/", routes.HelloHandler)
-	r.GET("/ws", ServeWebsocket)
+	r.GET("/ws", websocket.ServeWebsocket)
 }
 
 func addUserRoutes(db *sql.DB, r *gin.Engine) {
@@ -48,7 +49,7 @@ func addUserRoutes(db *sql.DB, r *gin.Engine) {
 	r.PUT("/users/user/update", func(c *gin.Context) {
 		routes.UpdateUserHandler(db, c)
 	})
-	r.DELETE("/users/user/:id", func(c *gin.Context) {
+	r.DELETE("/users/user/delete/:id", func(c *gin.Context) {
 		routes.DeleteUserHandler(db, c)
 	})
 }

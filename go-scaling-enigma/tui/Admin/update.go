@@ -1,6 +1,8 @@
 package admin
 
 import (
+	"scaling-enigma/go-scaling-enigma/main.go/tui/wsclient"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -9,6 +11,7 @@ func (m Admin) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
+			wsclient.CloseConnection()
 			return m, tea.Quit
 		case "up", "k":
 			if m.cursor > 0 {
