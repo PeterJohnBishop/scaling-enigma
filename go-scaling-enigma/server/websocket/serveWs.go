@@ -11,7 +11,7 @@ import (
 )
 
 type Event struct {
-	Event   string `json:"event"`
+	Type    string `json:"type"`
 	Message string `json:"message"`
 }
 

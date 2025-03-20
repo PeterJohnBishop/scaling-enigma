@@ -34,7 +34,7 @@ func CreateUserHandler(db *sql.DB, c *gin.Context) {
 	}
 
 	event := websocket.Event{
-		Event:   "UserCreated",
+		Type:    "UserCreated",
 		Message: fmt.Sprintf("User created successfully: %s", user),
 	}
 	websocket.BroadcastMessage(event)
@@ -90,7 +90,7 @@ func Login(db *sql.DB, c *gin.Context) {
 	}
 
 	event := websocket.Event{
-		Event:   "UserLogin",
+		Type:    "UserLogin",
 		Message: fmt.Sprintf("User logged in successfully: %s", user),
 	}
 	websocket.BroadcastMessage(event)
@@ -128,7 +128,7 @@ func GetUserByEmailHandler(db *sql.DB, email string, c *gin.Context) {
 	user = foundUser
 
 	event := websocket.Event{
-		Event:   "UserFoundByEmail",
+		Type:    "UserFoundByEmail",
 		Message: fmt.Sprintf("User found by email: %s", user),
 	}
 	websocket.BroadcastMessage(event)
@@ -162,7 +162,7 @@ func GetUserByIDHandler(db *sql.DB, c *gin.Context) {
 	user = foundUser
 
 	event := websocket.Event{
-		Event:   "UserFoundById",
+		Type:    "UserFoundById",
 		Message: fmt.Sprintf("User found by id: %s", user),
 	}
 	websocket.BroadcastMessage(event)
@@ -195,7 +195,7 @@ func GetUsersHandler(db *sql.DB, c *gin.Context) {
 	users = allUsers
 
 	event := websocket.Event{
-		Event:   "UsersFound",
+		Type:    "UsersFound",
 		Message: fmt.Sprintf("%d users found", len(users)),
 	}
 	websocket.BroadcastMessage(event)
@@ -231,7 +231,7 @@ func UpdateUserHandler(db *sql.DB, c *gin.Context) {
 	}
 
 	event := websocket.Event{
-		Event:   "UserUpdated",
+		Type:    "UserUpdated",
 		Message: fmt.Sprintf("User updated: %s", updatedUser),
 	}
 	websocket.BroadcastMessage(event)
@@ -266,7 +266,7 @@ func DeleteUserHandler(db *sql.DB, c *gin.Context) {
 	}
 
 	event := websocket.Event{
-		Event:   "UserDeleted",
+		Type:    "UserDeleted",
 		Message: "User Deleted",
 	}
 	websocket.BroadcastMessage(event)
