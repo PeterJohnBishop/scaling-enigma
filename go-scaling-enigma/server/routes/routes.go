@@ -33,6 +33,12 @@ func CreateUserHandler(db *sql.DB, c *gin.Context) {
 		return
 	}
 
+	event := websocket.Event{
+		Event:   "UserCreated",
+		Message: fmt.Sprintf("User created successfully: %s", user),
+	}
+	websocket.BroadcastMessage(event)
+
 	c.JSON(http.StatusCreated, user)
 }
 
@@ -83,8 +89,11 @@ func Login(db *sql.DB, c *gin.Context) {
 		return
 	}
 
-	websocket.BroadcastMessage(fmt.Sprintf("%s logged in", user.ID))
-
+	event := websocket.Event{
+		Event:   "UserLogin",
+		Message: fmt.Sprintf("User logged in successfully: %s", user),
+	}
+	websocket.BroadcastMessage(event)
 	c.JSON(http.StatusOK, gin.H{
 		"message":       "Login Success",
 		"token":         token,
@@ -115,7 +124,14 @@ func GetUserByEmailHandler(db *sql.DB, email string, c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user by that email"})
 		return
 	}
+
 	user = foundUser
+
+	event := websocket.Event{
+		Event:   "UserFoundByEmail",
+		Message: fmt.Sprintf("User found by email: %s", user),
+	}
+	websocket.BroadcastMessage(event)
 	c.JSON(http.StatusOK, user)
 }
 
@@ -142,7 +158,15 @@ func GetUserByIDHandler(db *sql.DB, c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user by that id"})
 		return
 	}
+
 	user = foundUser
+
+	event := websocket.Event{
+		Event:   "UserFoundById",
+		Message: fmt.Sprintf("User found by id: %s", user),
+	}
+	websocket.BroadcastMessage(event)
+
 	c.JSON(http.StatusOK, user)
 }
 
@@ -169,6 +193,12 @@ func GetUsersHandler(db *sql.DB, c *gin.Context) {
 		return
 	}
 	users = allUsers
+
+	event := websocket.Event{
+		Event:   "UsersFound",
+		Message: fmt.Sprintf("%d users found", len(users)),
+	}
+	websocket.BroadcastMessage(event)
 	c.JSON(http.StatusOK, users)
 }
 
@@ -199,6 +229,13 @@ func UpdateUserHandler(db *sql.DB, c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return
 	}
+
+	event := websocket.Event{
+		Event:   "UserUpdated",
+		Message: fmt.Sprintf("User updated: %s", updatedUser),
+	}
+	websocket.BroadcastMessage(event)
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User updated successfully",
 		"user":    updatedUser,
@@ -227,5 +264,12 @@ func DeleteUserHandler(db *sql.DB, c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
 		return
 	}
+
+	event := websocket.Event{
+		Event:   "UserDeleted",
+		Message: "User Deleted",
+	}
+	websocket.BroadcastMessage(event)
+
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted successfully"})
 }
