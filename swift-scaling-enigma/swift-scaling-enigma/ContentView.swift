@@ -26,7 +26,7 @@ struct ContentView: View {
                 .onDelete(perform: deleteItems)
             }
             .onAppear() {
-                webSocketManager.sendMessage("iOS event: Hello from the iOS app!")
+                webSocketManager.sendMessage(Event(type: "iOS", message: "iOS Connected"))
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

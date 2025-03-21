@@ -223,8 +223,7 @@ func UpdateUserHandler(db *sql.DB, c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
 		return
 	}
-	id := user.ID
-	updatedUser, err := postgres.UpdateUserByID(db, id, user)
+	updatedUser, err := postgres.UpdateUserByID(db, user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 		return

@@ -38,6 +38,7 @@ func CreateUser(db *sql.DB, user User) (User, error) {
 	if queryErr != nil {
 		return User{}, queryErr
 	}
+	user.ID = userID
 	return user, nil
 }
 
@@ -93,7 +94,7 @@ func GetUserByID(db *sql.DB, id string) (User, error) {
 	return user, nil
 }
 
-func UpdateUserByID(db *sql.DB, id string, user User) (User, error) {
+func UpdateUserByID(db *sql.DB, user User) (User, error) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -104,7 +105,7 @@ func UpdateUserByID(db *sql.DB, id string, user User) (User, error) {
 	WHERE id = $4 
 	RETURNING id, name, email, password, created_at, updated_at`
 	var updatedUser User
-	err := db.QueryRowContext(ctx, query, user.Name, user.Email, user.Password, id).
+	err := db.QueryRowContext(ctx, query, user.Name, user.Email, user.Password, user.ID).
 		Scan(&updatedUser.ID, &updatedUser.Name, &updatedUser.Email, &updatedUser.Password, &updatedUser.CreatedAt, &updatedUser.UpdatedAt)
 	if err != nil {
 		return User{}, err

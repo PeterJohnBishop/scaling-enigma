@@ -7,11 +7,16 @@
 
 import Foundation
 
+struct Event: Codable {
+    let type: String
+    let message: String
+}
+
 class WebSocketManager: ObservableObject {
     private var webSocketTask: URLSessionWebSocketTask?
     private let urlSession = URLSession(configuration: .default)
     
-    @Published var messages: [String] = [] // Stores received messages
+    @Published var messages: [Event] = [] // Stores received messages
 
     init() {
         connect()
@@ -26,13 +31,18 @@ class WebSocketManager: ObservableObject {
         receiveMessage() // Start listening for messages
     }
 
-    func sendMessage(_ message: String) {
-        let messageToSend = URLSessionWebSocketTask.Message.string(message)
+    func sendMessage(_ event: Event) {
+        guard let jsonData = try? JSONEncoder().encode(event),
+              let jsonString = String(data: jsonData, encoding: .utf8) else {
+            print("Failed to encode message")
+            return
+        }
+        let messageToSend = URLSessionWebSocketTask.Message.string(jsonString)
         webSocketTask?.send(messageToSend) { error in
             if let error = error {
                 print("Error sending event: \(error.localizedDescription)")
             } else {
-                print("📤 Sent: \(message)")
+                print("📤 Sent: \(jsonString)")
             }
         }
     }
@@ -43,16 +53,21 @@ class WebSocketManager: ObservableObject {
             case .success(let message):
                 switch message {
                 case .string(let text):
-                    DispatchQueue.main.async {
-                        self?.messages.append(text)
+                    if let data = text.data(using: .utf8),
+                       let event = try? JSONDecoder().decode(Event.self, from: data) {
+                        DispatchQueue.main.async {
+                            self?.messages.append(event)
+                        }
+                        print("Received: \(event)")
+                    } else {
+                        print("Failed to decode response")
                     }
-                    print("Received: \(text)")
                 default:
                     print("Received unsupported message type")
                 }
                 self?.receiveMessage() // Keep listening
             case .failure(let error):
-                print("Error recieving websocket message: \(error.localizedDescription)")
+                print("Error receiving websocket message: \(error.localizedDescription)")
             }
         }
     }
@@ -62,3 +77,4 @@ class WebSocketManager: ObservableObject {
         print("WebSocket disconnected")
     }
 }
+
