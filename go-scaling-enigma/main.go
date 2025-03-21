@@ -18,9 +18,17 @@ func main() {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
 
-	dbErr := postgres.CreateUsersTable(db)
-	if dbErr != nil {
-		log.Fatalf("Error creating users table: %v", dbErr)
+	err = postgres.CreateUsersTable(db)
+	if err != nil {
+		log.Fatalf("Error creating users table: %v", err)
+	}
+	err = postgres.CreateChatsTable(db)
+	if err != nil {
+		log.Fatalf("Error creating chats table: %v", err)
+	}
+	err = postgres.CreateMessagesTable(db)
+	if err != nil {
+		log.Fatalf("Error creating messages table: %v", err)
 	}
 	defer db.Close()
 

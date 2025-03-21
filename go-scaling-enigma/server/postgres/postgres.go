@@ -66,3 +66,39 @@ func CreateUsersTable(db *sql.DB) error {
 	}
 	return nil
 }
+
+func CreateChatsTable(db *sql.DB) error {
+	query := `
+	CREATE TABLE IF NOT EXISTS chats (
+		id TEXT UNIQUE NOT NULL PRIMARY KEY,
+		users TEXT[] NOT NULL,
+    	messages TEXT[],
+		created_at TIMESTAMP DEFAULT NOW(),
+		updated_at TIMESTAMP DEFAULT NOW()
+	);`
+
+	_, err := db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("error creating chats table: %w", err)
+	}
+	return nil
+}
+
+func CreateMessagesTable(db *sql.DB) error {
+	query := `
+	CREATE TABLE IF NOT EXISTS chats (
+		id TEXT UNIQUE NOT NULL PRIMARY KEY,
+		chat TEXT NOT NULL,
+		sender TEXT NOT NULL,
+		text TEXT,
+    	media TEXT[],
+		created_at TIMESTAMP DEFAULT NOW(),
+		updated_at TIMESTAMP DEFAULT NOW()
+	);`
+
+	_, err := db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("error creating messages table: %w", err)
+	}
+	return nil
+}
