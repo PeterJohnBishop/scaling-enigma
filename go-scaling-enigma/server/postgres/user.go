@@ -15,6 +15,8 @@ type User struct {
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	Password  string    `json:"password"`
+	Chats     []string  `json:"chats"`
+	Contacts  []string  `json:"contacts"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -47,7 +49,7 @@ func GetUsers(db *sql.DB) ([]User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	rows, err := db.QueryContext(ctx, "SELECT id, name, email, password, created_at, updated_at FROM users;")
+	rows, err := db.QueryContext(ctx, "SELECT id, name, email, password, chats, contacts, created_at, updated_at FROM users;")
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +57,7 @@ func GetUsers(db *sql.DB) ([]User, error) {
 	var users []User
 	for rows.Next() {
 		var user User
-		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Chats, &user.Contacts, &user.CreatedAt, &user.UpdatedAt); err != nil {
 			return []User{}, err
 		}
 		users = append(users, user)
@@ -72,8 +74,8 @@ func GetUserByEmail(db *sql.DB, email string) (User, error) {
 	defer cancel()
 
 	var user User
-	query := "SELECT id, name, email, password, created_at, updated_at FROM users WHERE email = $1"
-	err := db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
+	query := "SELECT id, name, email, password, chats, contacts, created_at, updated_at FROM users WHERE email = $1"
+	err := db.QueryRowContext(ctx, query, email).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Chats, &user.Contacts, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return user, err
 	}
@@ -87,7 +89,7 @@ func GetUserByID(db *sql.DB, id string) (User, error) {
 
 	var user User
 	query := "SELECT id, name, email, password, created_at, updated_at FROM users WHERE id = $1"
-	err := db.QueryRowContext(ctx, query, id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt)
+	err := db.QueryRowContext(ctx, query, id).Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.Chats, &user.Contacts, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		return User{}, err
 	}
@@ -101,12 +103,12 @@ func UpdateUserByID(db *sql.DB, user User) (User, error) {
 
 	query := `
 	UPDATE users 
-	SET name = $1, email = $2, password = $3, updated_at = NOW() 
-	WHERE id = $4 
+	SET name = $1, email = $2, password = $3, chats = $4, contacts = $5 updated_at = NOW() 
+	WHERE id = $6 
 	RETURNING id, name, email, password, created_at, updated_at`
 	var updatedUser User
-	err := db.QueryRowContext(ctx, query, user.Name, user.Email, user.Password, user.ID).
-		Scan(&updatedUser.ID, &updatedUser.Name, &updatedUser.Email, &updatedUser.Password, &updatedUser.CreatedAt, &updatedUser.UpdatedAt)
+	err := db.QueryRowContext(ctx, query, user.Name, user.Email, user.Password, user.Chats, user.Contacts, user.ID).
+		Scan(&updatedUser.ID, &updatedUser.Name, &updatedUser.Email, &updatedUser.Password, &updatedUser.Chats, &updatedUser.Contacts, &updatedUser.CreatedAt, &updatedUser.UpdatedAt)
 	if err != nil {
 		return User{}, err
 	}
