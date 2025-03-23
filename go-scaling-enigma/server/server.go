@@ -23,6 +23,8 @@ func ServeGin(db *sql.DB) {
 	r := gin.Default()
 	addDefaultRoutes(r)
 	addUserRoutes(db, r)
+	addChatRoutes(db, r)
+	addMessageRoutes(db, r)
 	go websocket.HandleBroadcast()
 	fmt.Println("Server listening on [ Gin http://localhost:8080 ] : [ WebSocket ws://localhost:8080/ws ]")
 	r.Run(":8080")
@@ -51,5 +53,32 @@ func addUserRoutes(db *sql.DB, r *gin.Engine) {
 	})
 	r.DELETE("/users/user/delete/:id", func(c *gin.Context) {
 		routes.DeleteUserHandler(db, c)
+	})
+}
+
+func addChatRoutes(db *sql.DB, r *gin.Engine) {
+	r.POST("/chats/new", func(c *gin.Context) {
+		routes.CreateChatHandler(db, c)
+	})
+	r.GET("/chats/all", func(c *gin.Context) {
+		routes.GetChatsHandler(db, c)
+	})
+	r.PUT("/chats/update", func(c *gin.Context) {
+		routes.UpdateChatHandler(db, c)
+	})
+	r.DELETE("/chats/delete", func(c *gin.Context) {
+		routes.DeleteChatHandler(db, c)
+	})
+}
+
+func addMessageRoutes(db *sql.DB, r *gin.Engine) {
+	r.POST("/messages/new", func(c *gin.Context) {
+		routes.CreateMessageHandler(db, c)
+	})
+	r.GET("/messages/all", func(c *gin.Context) {
+		routes.GetMessagesHandler(db, c)
+	})
+	r.DELETE("/messages/delete", func(c *gin.Context) {
+		routes.DeleteMessageHandler(db, c)
 	})
 }

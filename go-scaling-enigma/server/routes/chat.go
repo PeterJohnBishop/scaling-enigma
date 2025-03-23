@@ -44,7 +44,7 @@ func CreateChatHandler(db *sql.DB, c *gin.Context) {
 	}
 
 	event := websocket.Event{
-		Type:    "UserCreated",
+		Type:    "ChatCreated",
 		Message: fmt.Sprintf("Chat created successfully: %s", chat),
 	}
 	websocket.BroadcastMessage(event)
